@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew clean
       - name: gradle check
         run: |
-          ./gradlew check -Dselenide.browserBinary=/snap/chromium/current/usr/lib/chromium-browser/chrome
+          ./gradlew check -Dselenide.browserBinary=/snap/chromium/current/usr/lib/chromium-browser/chrome -Dwebdriver.chrome.driver=chromedriver
           ./gradlew :projector-server-core:jacocoTestReport
           ./gradlew :projector-common:jacocoTestReport
           ./gradlew :projector-agent-common:jacocoTestReport
