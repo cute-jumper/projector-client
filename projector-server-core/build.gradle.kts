@@ -52,6 +52,7 @@ val kotlinVersion: String by project
 val ktorVersion: String by project
 val selenideVersion: String by project
 val slf4jVersion: String by project
+System.setProperty("user.dir", projectDir.toString())
 
 val devBuilding = rootProject.file("local.properties").let {
   when (it.canRead()) {
@@ -123,8 +124,8 @@ val integrationTest = task<Test>("integrationTest") {
   finalizedBy(tasks.jacocoTestReport)
 }
 
-// todo: understand why it doesn't work on CI (https://github.com/JetBrains/projector-client/runs/1045863376)
-//tasks.check { dependsOn(integrationTest) }
+// todo: understand why it doesn't work on CI
+tasks.check { dependsOn(integrationTest) }
 
 dependencies {
   api(project(":projector-common"))

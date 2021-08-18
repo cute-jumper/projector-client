@@ -22,11 +22,15 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '11'
+      - name: install Chrome
+        run: |
+          chmod +x ./scripts/InstallChrome.sh
+          ./scripts/InstallChrome.sh
       - name: gradle clean
         run: ./gradlew clean
       - name: gradle check
         run: |
-          ./gradlew check build
+          ./gradlew check
           ./gradlew :projector-server-core:jacocoTestReport
           ./gradlew :projector-common:jacocoTestReport
           ./gradlew :projector-agent-common:jacocoTestReport
