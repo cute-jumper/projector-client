@@ -38,11 +38,11 @@ jobs:
       - name: gradle check windows
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          ./gradlew check  -Dwebdriver.chrome.driver=chromedriver
+          ./gradlew check  -Dwebdriver.chrome.driver=chromedriver.exe
       - name: gradle check macOS
         if: ${{ matrix.os == 'macOS-latest' }}
         run: |
-          ./gradlew check  -Dwebdriver.chrome.driver=chromedriver
+          ./gradlew check  -Dwebdriver.chrome.driver=chromedriver_mac
 
       - name: gradle make jacoco reports
         run: |
