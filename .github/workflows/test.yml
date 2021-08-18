@@ -30,17 +30,17 @@ jobs:
         run: ./gradlew clean
 
       - name: gradle check ubuntu
-        if: ${{ matrix.os == ubuntu-latest }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           chmod +x ./scripts/InstallChrome.sh
           ./scripts/InstallChrome.sh
           ./gradlew check -Dselenide.browserBinary=/snap/chromium/current/usr/lib/chromium-browser/chrome -Dwebdriver.chrome.driver=chromedriver
       - name: gradle check windows
-        if: ${{ matrix.os == windows-latest }}
+        if: ${{ matrix.os == 'windows-latest' }}
         run: |
           ./gradlew check  -Dwebdriver.chrome.driver=chromedriver
       - name: gradle check macOS
-        if: ${{ matrix.os == macOS-latest }}
+        if: ${{ matrix.os == 'macOS-latest' }}
         run: |
           ./gradlew check  -Dwebdriver.chrome.driver=chromedriver
 
