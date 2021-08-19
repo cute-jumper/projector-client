@@ -21,41 +21,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-plugins {
-  kotlin("jvm")
-  `maven-publish`
-  jacoco
+package org.jetbrains.projector.agent.ijInjector
+
+import javassist.*
+
+internal fun getClassFromClassfileBuffer(pool: ClassPool, className: String, classfileBuffer: ByteArray): CtClass {
+  pool.insertClassPath(ByteArrayClassPath(className, classfileBuffer))
+  return pool.get(className).apply(CtClass::defrost)
 }
 
-jacoco {
-  toolVersion = "0.8.7"
-}
+private val currentClassPool: ClassPool by lazy { ClassPool().apply { appendClassPath(LoaderClassPath(object {}.javaClass.classLoader)) } }
 
-tasks.withType<JacocoReport> {
-  reports {
-    xml.isEnabled = true
-    xml.destination = file(layout.buildDirectory.dir("../../JacocoReports/jacocoReportAgentCommon.xml"))
-    csv.required.set(false)
-    html.outputLocation.set(layout.buildDirectory.dir("jacocoHtmlProjectorClient"))
-  }
-}
+private fun CtClass.getDeclaredMethodImpl(name: String, classPool: ClassPool, params: Array<out Class<*>>): CtMethod =
+  getDeclaredMethod(name, params.map { classPool[it.name] }.toTypedArray())
 
-tasks.test {
-  useJUnitPlatform()
-  finalizedBy(tasks.jacocoTestReport)
-}
-
-kotlin {
-  explicitApi()
-}
-
-publishing {
-  publishOnSpace(project, "java")
-}
-
-val javassistVersion: String by project
-
-dependencies {
-  implementation("org.javassist:javassist:$javassistVersion")
-  testImplementation(kotlin("test"))
-}
+internal fun CtClass.getDeclaredMethod(name: String, vararg params: Class<*>): CtMethod =
+  getDeclaredMethodImpl(name, currentClassPool, params)

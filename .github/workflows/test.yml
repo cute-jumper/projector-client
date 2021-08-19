@@ -29,7 +29,6 @@ jobs:
           ./gradlew check build
           ./gradlew :projector-server-core:jacocoTestReport
           ./gradlew :projector-common:jacocoTestReport
-          ./gradlew :projector-agent-common:jacocoTestReport
           ./gradlew :projector-agent-ij-injector:jacocoTestReport
           ./gradlew :projector-client-common:jacocoTestReport
           ./gradlew :projector-util-agent:jacocoTestReport

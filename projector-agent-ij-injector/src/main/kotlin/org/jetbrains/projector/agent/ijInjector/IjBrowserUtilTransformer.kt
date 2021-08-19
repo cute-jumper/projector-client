@@ -26,7 +26,6 @@ package org.jetbrains.projector.agent.ijInjector
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.project.Project
 import javassist.CtClass
-import org.jetbrains.projector.agent.common.getDeclaredMethod
 import org.jetbrains.projector.util.logging.Logger
 
 internal object IjBrowserUtilTransformer : TransformerSetup {
