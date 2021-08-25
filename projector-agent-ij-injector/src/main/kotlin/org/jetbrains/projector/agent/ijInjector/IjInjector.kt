@@ -46,10 +46,10 @@ internal object IjInjector {
     val utils = createUtils(instrumentation, args)
 
     IjLigaturesDisablerTransformer.runTransformations(utils)
+    IjMdTransformer.runTransformations(utils)
 
     val isAgent = args[IjArgs.IS_AGENT] == "true"
     if (!isAgent) {  // todo: support variant for agent too
-      IjMdTransformer.runTransformations(utils)
       IjBrowserUtilTransformer.runTransformations(utils)
       IjUiUtilsTransformer.runTransformations(utils)
     }

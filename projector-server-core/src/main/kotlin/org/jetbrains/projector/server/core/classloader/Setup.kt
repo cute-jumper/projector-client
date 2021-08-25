@@ -26,7 +26,6 @@ package org.jetbrains.projector.server.core.classloader
 import com.intellij.util.lang.UrlClassLoader
 import org.jetbrains.projector.server.core.ij.IjInjectorAgentInitializer
 import org.jetbrains.projector.server.core.ij.invokeWhenIdeaIsInitialized
-import org.jetbrains.projector.server.core.ij.md.PanelUpdater
 import org.jetbrains.projector.util.loading.ProjectorClassLoader
 
 @Suppress("RedundantVisibilityModifier") // Accessed in projector-server, don't trigger linter that doesn't know it
@@ -41,8 +40,6 @@ public object ProjectorClassLoaderSetup {
 
     // accessed in agent to get ide and projector classloaders in platform classloader context
     prjClassLoader.forceLoadByPlatform(IjInjectorAgentInitializer.IjInjectorAgentClassLoaders::class.java.name)
-    // accessed in client side markdown previewer in platform classloader context
-    prjClassLoader.forceLoadByPlatform(PanelUpdater::class.java.name)
     // without this server not works...
     prjClassLoader.forceLoadByPlatform("org.jetbrains.projector.server.core.websocket.")
     // we need only version of this class loaded by platform

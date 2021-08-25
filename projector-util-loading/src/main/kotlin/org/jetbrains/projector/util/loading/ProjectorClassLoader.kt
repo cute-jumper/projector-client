@@ -49,6 +49,8 @@ public class ProjectorClassLoader constructor(parent: ClassLoader? = null) : Cla
 
   private val jarFiles = mutableSetOf<String>()
 
+  private val pluginClassLoaders = mutableMapOf<String, ClassLoader>()
+
   init {
     if (myInstance == null) myInstance = this
   }
@@ -66,6 +68,11 @@ public class ProjectorClassLoader constructor(parent: ClassLoader? = null) : Cla
   @Suppress("unused", "RedundantVisibilityModifier") // public to be accessible for additional setup
   public fun forceLoadByIdea(className: String) {
     forceLoadByIdea += className
+  }
+
+  @Suppress("unused", "RedundantVisibilityModifier") // public to be accessible for additional setup
+  public fun addPluginLoader(classNamePrefix: String, classLoader: ClassLoader) {
+    pluginClassLoaders += classNamePrefix to classLoader
   }
 
   private fun mustBeLoadedByPlatform(name: String): Boolean = forceLoadByPlatform.any { name.startsWith(it) }
@@ -97,8 +104,9 @@ public class ProjectorClassLoader constructor(parent: ClassLoader? = null) : Cla
           }
         }
         mustBeLoadedByOurselves(name) -> defineClass(name, resolve, ::getResourceAsStream)
-        isIntellijClass(name) || mustBeLoadedByIdea(name) -> myIdeaLoader.loadClass(name, resolve)
-        else -> myAppClassLoader.loadClass(name, resolve)
+        mustBeLoadedByIdea(name) -> myIdeaLoader.loadClass(name, resolve)
+        isIntellijClass(name) -> tryLoadViaPluginClassLoader(name, resolve, myIdeaLoader)
+        else -> tryLoadViaPluginClassLoader(name, resolve, myAppClassLoader)
       }
     }
   }
@@ -126,6 +134,32 @@ public class ProjectorClassLoader constructor(parent: ClassLoader? = null) : Cla
         jarFile.getInputStream(entry)
       }.firstOrNull()
     }
+  }
+
+  private fun tryLoadViaPluginClassLoader(className: String, resolve: Boolean, fallbackClassLoader: ClassLoader): Class<*> {
+
+    val classFromPlugin = try {
+      getPluginClassLoader(className)?.loadClass(className, resolve)
+    } catch (_: Throwable) {
+      null
+    } ?: return fallbackClassLoader.loadClass(className, resolve)
+
+    return classFromPlugin
+  }
+
+  private fun getPluginClassLoader(className: String): ClassLoader? {
+    var classLoader: ClassLoader? = null
+    var longestSequenceLength = 0
+
+    pluginClassLoaders.entries.forEach {
+
+      if (it.key.length > longestSequenceLength && className.startsWith(it.key)) {
+        classLoader = it.value
+        longestSequenceLength = it.key.length
+      }
+    }
+
+    return classLoader
   }
 
   private fun defineClass(name: String, resolve: Boolean, inputStreamProvider: (String) -> InputStream?): Class<*> {
