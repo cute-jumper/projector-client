@@ -46,6 +46,7 @@ internal object IjMdTransformer : TransformerSetup {
     projectorClassLoader.addPluginLoader("org.intellij.plugins.markdown", classLoader)
 
     val mdPanelClass = utils.args.getValue(IjArgs.MD_PANEL_CLASS)
+    val isAgent = utils.args.getValue(IjArgs.IS_AGENT) == "true"
 
     return listOf(
       javaFxClass to MdPreviewType.JAVAFX,
@@ -53,7 +54,7 @@ internal object IjMdTransformer : TransformerSetup {
     ).mapNotNull {
       val clazz = classForNameOrNull(it.first, classLoader) ?: return@mapNotNull null
       clazz to it.second
-    }.associate { it.first to { clazz: CtClass -> transformMdHtmlPanelProvider(it.second, clazz, mdPanelClass) } }
+    }.associate { it.first to { clazz: CtClass -> transformMdHtmlPanelProvider(it.second, clazz, mdPanelClass, isAgent) } }
   }
 
   override fun getClassLoader(utils: IjInjector.Utils): ClassLoader? {
@@ -68,7 +69,12 @@ internal object IjMdTransformer : TransformerSetup {
     return extensions.filterNotNull().first()::class.java.classLoader
   }
 
-  private fun transformMdHtmlPanelProvider(previewType: MdPreviewType, clazz: CtClass, projectorMarkdownPanelClass: String): ByteArray {
+  private fun transformMdHtmlPanelProvider(
+    previewType: MdPreviewType,
+    clazz: CtClass,
+    projectorMarkdownPanelClass: String,
+    isAgent: Boolean
+  ): ByteArray {
     clazz
       .getDeclaredMethod("isAvailable")
       .setBody(
@@ -106,18 +112,20 @@ internal object IjMdTransformer : TransformerSetup {
             
             String className = "$projectorMarkdownPanelClass";
             Class mdPanelClazz = actualPrjClassLoader.loadClass(className);
-
-            return (org.intellij.plugins.markdown.ui.preview.MarkdownHtmlPanel) mdPanelClazz.getDeclaredConstructor(new Class[0]).newInstance(new Object[0]);
+            
+            return (org.intellij.plugins.markdown.ui.preview.MarkdownHtmlPanel) mdPanelClazz.getDeclaredConstructor(new Class[] { boolean.class, String.class }).newInstance(new Object[] { Boolean.valueOf($isAgent), "${previewType.panelClass}" });
           }
         """.trimIndent()
       )
 
+    clazz.debugWriteFile()
+
     return clazz.toBytecode()
   }
 
-  private enum class MdPreviewType(val displayName: String) {
+  private enum class MdPreviewType(val displayName: String, val panelClass: String) {
 
-    JAVAFX("JavaFX WebView"),
-    JCEF("JCEF Browser"),
+    JAVAFX("JavaFX WebView", "org.intellij.plugins.markdown.ui.preview.javafx.MarkdownJavaFxHtmlPanel"),
+    JCEF("JCEF Browser", "org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel"),
   }
 }

@@ -52,7 +52,11 @@ internal fun TransformerSetup.runTransformations(utils: IjInjector.Utils, canRet
 
   utils.instrumentation.apply {
     addTransformer(transformer, canRetransform)
-    retransformClasses(*transformations.keys.toTypedArray())
+    try {
+      retransformClasses(*transformations.keys.toTypedArray())
+    } catch (t: Throwable) {
+      logger.error(t) { "Transformation failed for one of the following classes: ${transformations.keys.joinToString { it.name }}" }
+    }
   }
 }
 
