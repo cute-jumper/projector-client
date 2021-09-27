@@ -22,20 +22,15 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: '11'
-#      - name: install Chrome
-#        run: |
-#          chmod +x ./scripts/InstallChrome.sh
-#          ./scripts/InstallChrome.sh
+      - name: set up Chromium
+        uses: browser-actions/setup-chrome@latest
+        run: chrome --version
       - name: gradle clean
         run: ./gradlew clean
-
       - name: gradle check ubuntu
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          chmod +x ./scripts/InstallChrome.sh
-          ./scripts/InstallChrome.sh
-          echo $PATH
-          ./gradlew check -Dselenide.browserBinary=/snap/chromium/current/usr/lib/chromium-browser/chrome
+          ./gradlew check -Dselenide.browserBinary=$(which chrome)
 #      - name: gradle check windows
 #        if: ${{ matrix.os == 'windows-latest' }}
 #        run: |
